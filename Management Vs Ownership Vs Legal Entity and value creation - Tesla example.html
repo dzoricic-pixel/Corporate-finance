@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tesla Financial Performance (2010–2025)</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --bg-color: #020617;
+            --card-bg: #0f172a;
+            --border-color: #1e293b;
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --accent-ocf: #3b82f6;
+            --accent-fcf: #10b981;
+            --accent-net: #f59e0b;
+            --accent-stock: #ef4444;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 24px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 1100px;
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 28px;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 8px 10px -6px rgba(0, 0, 0, 0.5);
+        }
+
+        .header {
+            margin-bottom: 24px;
+        }
+
+        .header h1 {
+            font-size: 1.6rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            letter-spacing: -0.025em;
+        }
+
+        .header p {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            margin-top: 4px;
+        }
+
+        /* Category Filter Bar */
+        .filter-bar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 20px;
+            background: #020617;
+            padding: 10px 14px;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            align-items: center;
+        }
+
+        .filter-label {
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-secondary);
+            margin-right: 8px;
+        }
+
+        .filter-btn {
+            background: #1e293b;
+            color: var(--text-secondary);
+            border: 1px solid #334155;
+            padding: 6px 14px;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .filter-btn:hover {
+            background: #334155;
+            color: var(--text-primary);
+        }
+
+        .filter-btn.active {
+            background: #3b82f6;
+            color: #ffffff;
+            border-color: #60a5fa;
+            font-weight: 600;
+        }
+
+        /* Metric Cards Grid */
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin-bottom: 28px;
+        }
+
+        .metric-card {
+            background: #020617;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 16px;
+            transition: transform 0.2s ease, border-color 0.2s ease;
+        }
+
+        .metric-card:hover {
+            transform: translateY(-2px);
+            border-color: #475569;
+        }
+
+        .metric-card.ocf { border-left: 4px solid var(--accent-ocf); }
+        .metric-card.fcf { border-left: 4px solid var(--accent-fcf); }
+        .metric-card.net { border-left: 4px solid var(--accent-net); }
+        .metric-card.stock { border-left: 4px solid var(--accent-stock); }
+
+        .metric-title {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            font-weight: 600;
+            color: var(--text-secondary);
+            letter-spacing: 0.05em;
+        }
+
+        .metric-value {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-top: 6px;
+        }
+
+        .metric-year {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            margin-top: 2px;
+        }
+
+        /* Chart Wrapper */
+        .chart-container {
+            position: relative;
+            height: 480px;
+            width: 100%;
+        }
+
+        .instructions {
+            margin-top: 20px;
+            padding: 12px 16px;
+            background: rgba(51, 65, 85, 0.4);
+            border-radius: 6px;
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .instructions span strong {
+            color: var(--text-primary);
+        }
+
+        /* Historical Overview Notes Section */
+        .notes-section {
+            margin-top: 32px;
+            padding: 24px;
+            background: #020617;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+        }
+
+        .notes-section h2 {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 16px;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 10px;
+        }
+
+        .notes-list {
+            list-style-type: none;
+            padding-left: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+
+        .notes-list li {
+            position: relative;
+            padding-left: 20px;
+            font-size: 0.9rem;
+            line-height: 1.5;
+            color: var(--text-secondary);
+        }
+
+        .notes-list li::before {
+            content: "•";
+            position: absolute;
+            left: 0;
+            top: 0;
+            color: var(--accent-ocf);
+            font-weight: bold;
+            font-size: 1.2rem;
+            line-height: 1;
+        }
+
+        .notes-list strong {
+            color: var(--text-primary);
+        }
+
+        .notes-list a {
+            color: #60a5fa;
+            text-decoration: none;
+            border-bottom: 1px dotted #60a5fa;
+            transition: color 0.2s ease;
+        }
+
+        .notes-list a:hover {
+            color: #93c5fd;
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header">
+        <h1>Tesla, Inc. (TSLA) Financial Performance</h1>
+        <p>Annual Cash Flow, Net Income ($Billions) & Split-Adjusted Stock Price ($ USD)</p>
+    </div>
+
+    <!-- Category Filter Bar -->
+    <div class="filter-bar">
+        <span class="filter-label">Quick Views:</span>
+        <button class="filter-btn active" onclick="applyFilter('all', this)">All Metrics</button>
+        <button class="filter-btn" onclick="applyFilter('cashflow', this)">Cash Flow Only</button>
+        <button class="filter-btn" onclick="applyFilter('profitability', this)">Profitability (OCF & Net Income)</button>
+        <button class="filter-btn" onclick="applyFilter('stock', this)">Stock Price vs. FCF</button>
+    </div>
+
+    <!-- Dynamic Hover Cards -->
+    <div class="metrics-grid">
+        <div class="metric-card ocf">
+            <div class="metric-title">Operating Cash Flow</div>
+            <div class="metric-value" id="val-ocf">$14.75B</div>
+            <div class="metric-year" id="year-ocf">2025 Value</div>
+        </div>
+        <div class="metric-card fcf">
+            <div class="metric-title">Free Cash Flow</div>
+            <div class="metric-value" id="val-fcf">$6.22B</div>
+            <div class="metric-year" id="year-fcf">2025 Value</div>
+        </div>
+        <div class="metric-card net">
+            <div class="metric-title">GAAP Net Income</div>
+            <div class="metric-value" id="val-net">$3.86B</div>
+            <div class="metric-year" id="year-net">2025 Value</div>
+        </div>
+        <div class="metric-card stock">
+            <div class="metric-title">Year-End Stock Price</div>
+            <div class="metric-value" id="val-stock">$449.72</div>
+            <div class="metric-year" id="year-stock">2025 Value</div>
+        </div>
+    </div>
+
+    <!-- Interactive Chart Canvas -->
+    <div class="chart-container">
+        <canvas id="teslaChart"></canvas>
+    </div>
+
+    <div class="instructions">
+        <span>💡 <strong>Interactive Controls:</strong> Use the category filter buttons above to isolate specific financial metrics, or hover over chart bars to view precise data for any given year.</span>
+    </div>
+
+    <!-- Notes Section: Historical Overview -->
+    <div class="notes-section">
+        <h2>Historical Overview</h2>
+        <ul class="notes-list">
+            <li>
+                <strong>Model 3 "Production Hell" Era (Late 2017 – Mid 2018):</strong> Tesla faced severe operational bottlenecks scaling automated manufacturing for the Model 3, causing heavy cash burn (~$750M in a single quarter) and fears of insolvency before reaching sustained positive cash flow in Q3 2018.
+            </li>
+            <li>
+                <strong>Investor Push to Oust Musk (2018):</strong> Mounting cash burn and delivery delays sparked activist shareholder proposals urging board members to strip Elon Musk of his authority. Following his controversial "funding secured" tweet, the U.S. SEC required him to step down as Chairman (while remaining CEO). See CBS News coverage: <a href="https://www.cbsnews.com/news/elon-musk-settles-with-sec-today-taking-tesla-private-420-tweet-step-down-board-chairman-2018-09-29/" target="_blank" rel="noopener noreferrer">"Elon Musk to step down as chair of Tesla board, settles with SEC for $20 million"</a>.
+            </li>
+            <li>
+                <strong>Price Cuts & Margin Squeeze (Early 2024 – Early 2025):</strong> Escalating EV market competition and high interest rates forced vehicle price cuts, reducing profit margins and driving Q1 2024 Free Cash Flow into negative territory, which raised concerns over prioritizing AI and Robotaxi spending over core EV profitability.
+            </li>
+            <li>
+                <strong>Evolution of Musk's Stake:</strong> Musk maintained an approximate 20% to 22% stake during the 2018 production crisis (granting roughly 26% total voting power). His direct ownership fell to ~13% in 2022 to fund his acquisition of Twitter (now X), before returning to ~20% following the re-ratification of his 2018 CEO compensation package.
+            </li>
+            <li>
+                <strong>Voting Control Objectives:</strong> Musk has publicly expressed an ambition to reach around 25% voting control in Tesla to secure strategic direction over its artificial intelligence and robotics initiatives.
+            </li>
+        </ul>
+    </div>
+</div>
+
+<script>
+    const years = ['2010', '2011', '2012', '2013', '2014', '2015', '2016', '2017', '2018', '2019', '2020', '2021', '2022', '2023', '2024', '2025'];
+    const ocfData = [-0.13, -0.13, -0.27, 0.27, -0.06, -0.53, -0.12, -0.06, 2.10, 2.41, 5.94, 11.50, 14.72, 13.26, 14.90, 14.75];
+    const fcfData = [-0.17, -0.31, -0.51, -0.01, -1.03, -2.16, -1.42, -3.48, 0.00, 1.08, 2.79, 5.02, 7.57, 4.36, 3.58, 6.22];
+    const netData = [-0.15, -0.25, -0.40, -0.07, -0.29, -0.89, -0.68, -1.96, -0.98, -0.86, 0.72, 5.64, 12.59, 14.97, 7.15, 3.86];
+    const stockData = [1.77, 1.90, 2.26, 10.03, 14.83, 16.00, 14.25, 20.76, 22.19, 27.89, 235.22, 352.26, 123.18, 248.48, 403.84, 449.72];
+
+    const ctx = document.getElementById('teslaChart').getContext('2d');
+
+    const chart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: years,
+            datasets: [
+                {
+                    label: 'Operating Cash Flow ($B)',
+                    data: ocfData,
+                    backgroundColor: '#3b82f6',
+                    borderRadius: 4,
+                    yAxisID: 'yCash',
+                    order: 2
+                },
+                {
+                    label: 'Free Cash Flow ($B)',
+                    data: fcfData,
+                    backgroundColor: '#10b981',
+                    borderRadius: 4,
+                    yAxisID: 'yCash',
+                    order: 3
+                },
+                {
+                    label: 'GAAP Net Income ($B)',
+                    data: netData,
+                    backgroundColor: '#f59e0b',
+                    borderRadius: 4,
+                    yAxisID: 'yCash',
+                    order: 4
+                },
+                {
+                    label: 'Stock Price ($ USD)',
+                    data: stockData,
+                    type: 'line',
+                    borderColor: '#ef4444',
+                    backgroundColor: '#ef4444',
+                    borderWidth: 3,
+                    pointRadius: 4,
+                    pointHoverRadius: 7,
+                    tension: 0.2,
+                    yAxisID: 'yStock',
+                    order: 1
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            interaction: {
+                mode: 'index',
+                intersect: false,
+            },
+            plugins: {
+                legend: {
+                    position: 'top',
+                    labels: {
+                        color: '#f8fafc',
+                        font: { size: 12, weight: '500' },
+                        usePointStyle: true,
+                        padding: 20
+                    }
+                },
+                tooltip: {
+                    backgroundColor: '#0f172a',
+                    titleColor: '#f8fafc',
+                    bodyColor: '#cbd5e1',
+                    borderColor: '#334155',
+                    borderWidth: 1,
+                    padding: 12,
+                    boxPadding: 6,
+                    usePointStyle: true,
+                    callbacks: {
+                        label: function(context) {
+                            let label = context.dataset.label || '';
+                            if (label) {
+                                label += ': ';
+                            }
+                            if (context.dataset.yAxisID === 'yStock') {
+                                label += '$' + context.parsed.y.toFixed(2);
+                            } else {
+                                const val = context.parsed.y;
+                                label += (val >= 0 ? '+$' : '-$') + Math.abs(val).toFixed(2) + 'B';
+                            }
+                            return label;
+                        }
+                    }
+                }
+            },
+            scales: {
+                x: {
+                    grid: { color: '#1e293b' },
+                    ticks: { color: '#94a3b8', font: { size: 11 } }
+                },
+                yCash: {
+                    type: 'linear',
+                    position: 'left',
+                    grid: { color: '#334155' },
+                    ticks: {
+                        color: '#94a3b8',
+                        callback: function(value) {
+                            return (value >= 0 ? '$' : '-$') + Math.abs(value) + 'B';
+                        }
+                    },
+                    title: {
+                        display: true,
+                        text: 'Cash Flow & Income ($ Billions)',
+                        color: '#94a3b8'
+                    }
+                },
+                yStock: {
+                    type: 'linear',
+                    position: 'right',
+                    grid: { drawOnChartArea: false },
+                    ticks: {
+                        color: '#ef4444',
+                        callback: function(value) {
+                            return '$' + value;
+                        }
+                    },
+                    title: {
+                        display: true,
+                        text: 'Year-End Stock Price ($ USD)',
+                        color: '#ef4444'
+                    }
+                }
+            },
+            onHover: (event, activeElements) => {
+                if (activeElements.length > 0) {
+                    const index = activeElements[0].index;
+                    const year = years[index];
+                    
+                    document.getElementById('val-ocf').innerText = (ocfData[index] >= 0 ? '$' : '-$') + Math.abs(ocfData[index]).toFixed(2) + 'B';
+                    document.getElementById('val-fcf').innerText = (fcfData[index] >= 0 ? '$' : '-$') + Math.abs(fcfData[index]).toFixed(2) + 'B';
+                    document.getElementById('val-net').innerText = (netData[index] >= 0 ? '$' : '-$') + Math.abs(netData[index]).toFixed(2) + 'B';
+                    document.getElementById('val-stock').innerText = '$' + stockData[index].toFixed(2);
+
+                    document.getElementById('year-ocf').innerText = year + ' Value';
+                    document.getElementById('year-fcf').innerText = year + ' Value';
+                    document.getElementById('year-net').innerText = year + ' Value';
+                    document.getElementById('year-stock').innerText = year + ' Value';
+                }
+            }
+        }
+    });
+
+    function applyFilter(category, btn) {
+        document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+
+        // Indices: 0 = OCF, 1 = FCF, 2 = Net Income, 3 = Stock Price
+        if (category === 'all') {
+            chart.setDatasetVisibility(0, true);
+            chart.setDatasetVisibility(1, true);
+            chart.setDatasetVisibility(2, true);
+            chart.setDatasetVisibility(3, true);
+        } else if (category === 'cashflow') {
+            chart.setDatasetVisibility(0, true);
+            chart.setDatasetVisibility(1, true);
+            chart.setDatasetVisibility(2, false);
+            chart.setDatasetVisibility(3, false);
+        } else if (category === 'profitability') {
+            chart.setDatasetVisibility(0, true);
+            chart.setDatasetVisibility(1, false);
+            chart.setDatasetVisibility(2, true);
+            chart.setDatasetVisibility(3, false);
+        } else if (category === 'stock') {
+            chart.setDatasetVisibility(0, false);
+            chart.setDatasetVisibility(1, true);
+            chart.setDatasetVisibility(2, false);
+            chart.setDatasetVisibility(3, true);
+        }
+        chart.update();
+    }
+</script>
+
+</body>
+</html>
