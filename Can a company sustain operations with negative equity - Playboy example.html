@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Playboy Enterprises, Inc. (1990–2011) - Financial Analysis</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    :root {
+      --bg-color: #f8f9fa;
+      --card-bg: #ffffff;
+      --text-main: #212529;
+      --text-muted: #6c757d;
+      --border-color: #dee2e6;
+      --primary: #9467bd;
+    }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background-color: var(--bg-color);
+      color: var(--text-main);
+      margin: 0;
+      padding: 20px;
+    }
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    header {
+      margin-bottom: 24px;
+      border-bottom: 2px solid var(--border-color);
+      padding-bottom: 16px;
+    }
+    h1 {
+      margin: 0 0 8px 0;
+      font-size: 26px;
+      color: #111;
+    }
+    p.subtitle {
+      margin: 0;
+      color: var(--text-muted);
+      font-size: 15px;
+    }
+    .filter-bar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-bottom: 20px;
+      align-items: center;
+      background: var(--card-bg);
+      padding: 12px 16px;
+      border-radius: 8px;
+      border: 1px solid var(--border-color);
+    }
+    .filter-btn {
+      background: #e9ecef;
+      border: 1px solid var(--border-color);
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .filter-btn:hover, .filter-btn.active {
+      background: var(--primary);
+      color: white;
+      border-color: var(--primary);
+    }
+    .select-group {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 13px;
+      font-weight: 600;
+      margin-left: auto;
+    }
+    select {
+      padding: 5px 10px;
+      border-radius: 6px;
+      border: 1px solid var(--border-color);
+      font-size: 13px;
+    }
+    .chart-box {
+      background: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 20px;
+      margin-bottom: 24px;
+      position: relative;
+    }
+    .cards-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 16px;
+    }
+    .card-title {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+      font-weight: 700;
+    }
+    .card-value {
+      font-size: 20px;
+      font-weight: 700;
+    }
+    .info-section {
+      background: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 20px;
+      margin-bottom: 24px;
+    }
+    .info-section h2 {
+      font-size: 18px;
+      margin-top: 0;
+      color: #111;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>Playboy Enterprises, Inc. (1990–2011)</h1>
+      <p class="subtitle">Interactive Financial Dashboard: Cash Flows, Profits, Total Stockholders' Equity, and Stock Price</p>
+    </header>
+
+    <div class="filter-bar">
+      <span style="font-size: 13px; font-weight: 700; margin-right: 4px;">Category Views:</span>
+      <button class="filter-btn active" onclick="setCategory('all')">All Metrics</button>
+      <button class="filter-btn" onclick="setCategory('cashflow')">Cash Flow Only</button>
+      <button class="filter-btn" onclick="setCategory('equity')">Balance Sheet Equity</button>
+      <button class="filter-btn" onclick="setCategory('profit')">Profitability</button>
+
+      <div class="select-group">
+        <label>Era:</label>
+        <select id="eraSelect" onchange="filterEra(this.value)">
+          <option value="all">Full Period (1990–2011)</option>
+          <option value="expansion">Print Era Expansion (1990–1998)</option>
+          <option value="dotcom">Dot-Com Peak & Bust (1999–2003)</option>
+          <option value="digital">Digital Decline & Restructuring (2004–2007)</option>
+          <option value="buyout">GFC Impairments & Buyout (2008–2011)</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="cards-grid">
+      <div class="card">
+        <div class="card-title">Year Hovered</div>
+        <div class="card-value" id="cardYear">Hover Chart</div>
+      </div>
+      <div class="card">
+        <div class="card-title">Operating Cash Flow</div>
+        <div class="card-value" id="cardOCF">-</div>
+      </div>
+      <div class="card">
+        <div class="card-title">Total Stockholders Equity</div>
+        <div class="card-value" id="cardEquity">-</div>
+      </div>
+      <div class="card">
+        <div class="card-title">Hefner Book Share (35%)</div>
+        <div class="card-value" id="cardHefner">-</div>
+      </div>
+      <div class="card">
+        <div class="card-title">Stock Price</div>
+        <div class="card-value" id="cardStock">-</div>
+      </div>
+    </div>
+
+    <div class="chart-box">
+      <canvas id="playboyChart" height="110"></canvas>
+    </div>
+
+    <div class="info-section">
+      <h2>Hugh Hefner & Family Ownership & Equity Analysis</h2>
+      <p>During Playboy's public company era (1990–2011), the Hefner family held voting control and a substantial equity stake:</p>
+      <ul>
+        <li><strong>Dual-Class Voting Structure:</strong> Hugh Hefner controlled <strong>~70% of Class A Voting Shares</strong> and held approximately <strong>28% to 37% of Total Equity</strong> across all share classes (~35% average pro-rata stake).</li>
+        <li><strong>Balance Sheet Stockholders Equity:</strong> Total equity on the balance sheet peaked at <strong>$136.2M in 1999</strong> (giving the Hefner family a ~$47.7M pro-rata book equity share). After severe non-cash goodwill impairments during the 2008 Great Financial Crisis, stockholders equity turned negative (-$210.0M by 2011).</li>
+        <li><strong>2011 Take-Private Buyout:</strong> In January 2011, Hugh Hefner partnered with private equity firm <strong>Rizvi Traverse Management</strong> to acquire Playboy at $6.15/share ($207M total valuation). Hefner rolled over his ~37% equity stake into the newly private firm.</li>
+      </ul>
+    </div>
+  </div>
+
+  <script>
+    const fullData = {
+      labels: [1990, 1991, 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011],
+      ocf: [12.1, 10.5, -2.1, 8.4, 9.2, 11.0, 1.5, 8.2, 14.3, 11.2, -12.1, -15.2, -4.1, 2.3, 8.5, -3.2, 4.1, 7.2, -18.2, -12.4, -15.1, -5.0],
+      fcf: [6.2, 4.1, -8.5, 3.2, 3.8, 4.2, -4.8, 2.1, 5.1, 3.0, -22.5, -24.1, -10.2, -3.5, 3.1, -8.5, -1.2, 2.1, -24.5, -16.2, -18.5, -7.2],
+      ni: [9.5, 7.1, -8.3, 4.2, 5.1, 5.8, -6.2, 3.4, 6.7, 4.1, -26.3, -29.1, -12.4, -6.8, 1.2, -10.3, -2.1, 1.8, -156.1, -51.3, -62.3, -20.0],
+      equity: [105.2, 112.1, 102.5, 108.4, 115.2, 122.1, 116.5, 121.2, 130.5, 136.2, 115.4, 88.2, 78.1, 72.4, 75.1, 68.2, 69.1, 72.5, -82.1, -131.2, -192.5, -210.0],
+      hefnerEquity: [36.8, 39.2, 35.9, 37.9, 40.3, 42.7, 40.8, 42.4, 45.7, 47.7, 40.4, 30.9, 27.3, 25.3, 26.3, 23.9, 24.2, 25.4, -28.7, -45.9, -67.4, -73.5],
+      stock: [8.25, 6.50, 5.75, 8.12, 10.50, 10.25, 11.88, 14.50, 21.00, 31.25, 15.50, 14.20, 10.15, 12.80, 13.50, 11.20, 9.80, 9.10, 2.80, 2.95, 4.50, 6.15]
+    };
+
+    let activeData = JSON.parse(JSON.stringify(fullData));
+
+    const ctx = document.getElementById('playboyChart').getContext('2d');
+    const myChart = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: activeData.labels,
+        datasets: [
+          {
+            label: 'Operating Cash Flow ($M)',
+            data: activeData.ocf,
+            backgroundColor: 'rgba(31, 119, 180, 0.85)',
+            yAxisID: 'y'
+          },
+          {
+            label: 'Free Cash Flow ($M)',
+            data: activeData.fcf,
+            backgroundColor: 'rgba(44, 160, 44, 0.85)',
+            yAxisID: 'y'
+          },
+          {
+            label: 'Net Income ($M)',
+            data: activeData.ni,
+            backgroundColor: 'rgba(255, 127, 14, 0.85)',
+            yAxisID: 'y'
+          },
+          {
+            label: 'Total Stockholders Equity ($M)',
+            data: activeData.equity,
+            backgroundColor: 'rgba(148, 103, 189, 0.85)',
+            yAxisID: 'y'
+          },
+          {
+            label: 'Stock Price ($)',
+            data: activeData.stock,
+            type: 'line',
+            borderColor: '#e31a1c',
+            backgroundColor: '#e31a1c',
+            borderWidth: 2.5,
+            pointRadius: 4,
+            yAxisID: 'y1'
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        interaction: { mode: 'index', intersect: false },
+        onHover: (e, activeElements) => {
+          if (activeElements && activeElements.length > 0) {
+            const idx = activeElements[0].index;
+            document.getElementById('cardYear').innerText = activeData.labels[idx];
+            document.getElementById('cardOCF').innerText = '$' + activeData.ocf[idx].toFixed(1) + 'M';
+            document.getElementById('cardEquity').innerText = '$' + activeData.equity[idx].toFixed(1) + 'M';
+            document.getElementById('cardHefner').innerText = '$' + activeData.hefnerEquity[idx].toFixed(1) + 'M';
+            document.getElementById('cardStock').innerText = '$' + activeData.stock[idx].toFixed(2);
+          }
+        },
+        scales: {
+          y: {
+            type: 'linear',
+            position: 'left',
+            title: { display: true, text: 'Financial Metrics (USD Millions)' },
+            grid: { color: 'rgba(0,0,0,0.05)' }
+          },
+          y1: {
+            type: 'linear',
+            position: 'right',
+            title: { display: true, text: 'Stock Price (USD)' },
+            grid: { drawOnChartArea: false }
+          }
+        }
+      }
+    });
+
+    function setCategory(cat) {
+      document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+      if(event && event.target) event.target.classList.add('active');
+
+      const isAll = cat === 'all';
+      myChart.setDatasetVisibility(0, isAll || cat === 'cashflow');
+      myChart.setDatasetVisibility(1, isAll || cat === 'cashflow');
+      myChart.setDatasetVisibility(2, isAll || cat === 'profit');
+      myChart.setDatasetVisibility(3, isAll || cat === 'equity');
+      myChart.setDatasetVisibility(4, true);
+      myChart.update();
+    }
+
+    function filterEra(era) {
+      let start = 0, end = fullData.labels.length;
+      if (era === 'expansion') { start = 0; end = 9; }
+      else if (era === 'dotcom') { start = 9; end = 14; }
+      else if (era === 'digital') { start = 14; end = 18; }
+      else if (era === 'buyout') { start = 18; end = 22; }
+
+      activeData.labels = fullData.labels.slice(start, end);
+      activeData.ocf = fullData.ocf.slice(start, end);
+      activeData.fcf = fullData.fcf.slice(start, end);
+      activeData.ni = fullData.ni.slice(start, end);
+      activeData.equity = fullData.equity.slice(start, end);
+      activeData.hefnerEquity = fullData.hefnerEquity.slice(start, end);
+      activeData.stock = fullData.stock.slice(start, end);
+
+      myChart.data.labels = activeData.labels;
+      myChart.data.datasets[0].data = activeData.ocf;
+      myChart.data.datasets[1].data = activeData.fcf;
+      myChart.data.datasets[2].data = activeData.ni;
+      myChart.data.datasets[3].data = activeData.equity;
+      myChart.data.datasets[4].data = activeData.stock;
+      myChart.update();
+    }
+  </script>
+</body>
+</html>
